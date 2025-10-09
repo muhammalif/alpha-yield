@@ -27,7 +27,8 @@ export function AIStatus() {
         address: STRATEGY_ADDRESS as `0x${string}`,
         abi: STRATEGY_ABI,
         functionName: 'harvest',
-        account: address as `0x${string}`,
+        chain: u2uNebulasTestnet,
+        gas: 3000000n, // Set gas limit
       });
       toast.success('Harvest initiated successfully!');
     } catch (error) {

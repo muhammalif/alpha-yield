@@ -98,8 +98,9 @@ export function DepositForm() {
         abi: ERC20_ABI,
         functionName: 'approve',
         args: [validatedVault, amountWei],
+        chain: u2uNebulasTestnet,
         gas: 100000n, // Set gas limit for approval
-      } as any);
+      });
       toast.info('Approval transaction submitted');
     } catch (error) {
       toast.error('Approval failed');
@@ -124,16 +125,18 @@ export function DepositForm() {
           abi: VAULT_ABI,
           functionName: 'depositNative',
           value: amountWei,
+          chain: u2uNebulasTestnet,
           gas: 3000000n, // Set gas limit
-        } as any);
+        });
       } else {
         await deposit({
           address: validatedVault,
           abi: VAULT_ABI,
           functionName: 'deposit',
           args: [amountWei],
+          chain: u2uNebulasTestnet,
           gas: 3000000n, // Set gas limit
-        } as any);
+        });
       }
       toast.info('Deposit transaction submitted');
     } catch (error) {

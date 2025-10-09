@@ -71,7 +71,6 @@ export function WithdrawForm() {
         functionName: 'withdraw' as const,
         args: [amountWei] as const,
         chain: u2uNebulasTestnet,
-        account: address as `0x${string}`,
         gas: 3000000n, // Set gas limit to avoid estimation issues
       });
       toast.info('Withdrawal transaction submitted');

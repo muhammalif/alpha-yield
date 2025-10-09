@@ -66,7 +66,6 @@ export function ClaimRewards() {
         abi: VAULT_ABI,
         functionName: 'claimRewards',
         chain: u2uNebulasTestnet,
-        account: address as `0x${string}`,
         gas: 3000000n, // Set gas limit to avoid estimation issues
       });
       toast.info('Claim transaction submitted');
