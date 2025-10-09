@@ -13,7 +13,6 @@ interface IYieldVault {
     function addRewards(uint256 amount) external;
 }
 
-// A simple example for MVP, a strategy interacting with a single liquidity pool
 contract SimpleStrategy is IStrategy, Ownable, ReentrancyGuard {
     bool private pausedState;
 
@@ -28,9 +27,9 @@ contract SimpleStrategy is IStrategy, Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     IERC20 public immutable token; // U2U token
-    IERC20 public immutable pairToken; // Mock pair token (e.g., a stablecoin)
+    IERC20 public immutable pairToken; // Mock pair token
     address public immutable mockRouter; // MockRouter address
-    address public vault; // Vault address for rewards
+    address public vault; // Vault address for rewardss
     address public aiController; // optional AI controller
 
     uint256 private totalAssets;
@@ -55,7 +54,7 @@ contract SimpleStrategy is IStrategy, Ownable, ReentrancyGuard {
 
     function depositToStrategy(uint256 amount, uint256 slippageTolerance, uint256 deadline) external override nonReentrant whenNotPaused onlyVault {
         require(amount > 0, "SimpleStrategy: deposit amount must be greater than zero");
-        require(slippageTolerance <= 10000, "SimpleStrategy: invalid slippage tolerance");
+        require(slippageTolerance <= 1000, "SimpleStrategy: slippage tolerance too high"); // Max 10%
         // Override slippage from AI controller if set
         if (aiController != address(0)) {
             uint256 aiBps = IAIController(aiController).targetSlippageBps();
@@ -63,9 +62,9 @@ contract SimpleStrategy is IStrategy, Ownable, ReentrancyGuard {
                 slippageTolerance = aiBps;
             }
         }
-        // Approve router to spend tokens (set to max to avoid repeated approvals and dual-spend when tokens are the same)
+        // Approve max for gas efficiency
         token.forceApprove(mockRouter, type(uint256).max);
-        pairToken.forceApprove(mockRouter, type(uint256).max); // Assume pairToken is available in strategy (pre-fund or mint)
+        pairToken.forceApprove(mockRouter, type(uint256).max);
 
         // Provide liquidity with user-defined slippage tolerance
         uint256 amountAMin = amount * (10000 - slippageTolerance) / 10000;
@@ -87,7 +86,7 @@ contract SimpleStrategy is IStrategy, Ownable, ReentrancyGuard {
 
     function withdrawFromStrategy(uint256 amount, uint256 slippageTolerance, uint256 deadline) external override nonReentrant whenNotPaused onlyVault {
         require(amount > 0, "SimpleStrategy: withdraw amount must be greater than zero");
-        require(slippageTolerance <= 10000, "SimpleStrategy: invalid slippage tolerance");
+        require(slippageTolerance <= 1000, "SimpleStrategy: slippage tolerance too high"); // Max 10%
         if (aiController != address(0)) {
             uint256 aiBps = IAIController(aiController).targetSlippageBps();
             if (aiBps > 0 && aiBps <= 10000) {
@@ -96,7 +95,7 @@ contract SimpleStrategy is IStrategy, Ownable, ReentrancyGuard {
         }
         // Calculate liquidity to remove proportionally
         uint256 liquidityToRemove = (liquidityProvided * amount) / totalAssets;
-        require(liquidityToRemove > 0, "SimpleStrategy: insufficient liquidity");
+        require(liquidityToRemove > 0 && liquidityToRemove <= liquidityProvided, "SimpleStrategy: insufficient liquidity");
 
         // Remove liquidity with user-defined slippage tolerance
         uint256 expectedAmountA = (liquidityToRemove * totalAssets) / liquidityProvided;
@@ -118,10 +117,10 @@ contract SimpleStrategy is IStrategy, Ownable, ReentrancyGuard {
 
         // Transfer withdrawn tokens back to vault
         token.safeTransfer(msg.sender, amountA);
-        // Optionally handle pairToken (e.g., swap back or hold)
+        // Optionally handle pairToken
     }
 
-    // Fungsi untuk mengklaim reward dan menginvestasikannya kembali
+    // Function to claim rewards and reinvest them
     function harvest() external override onlyOwner whenNotPaused {
         require(mockRouter != address(0), "SimpleStrategy: mock router not set");
         require(totalAssets > 0, "SimpleStrategy: no assets to harvest");
@@ -135,10 +134,6 @@ contract SimpleStrategy is IStrategy, Ownable, ReentrancyGuard {
         // Simulate yield generation: 1% of total assets as reward
         uint256 yieldAmount = totalAssets / 100; // 1% yield
         
-        // In a real scenario, this would come from actual protocol rewards
-        // For mock, we'll mint additional tokens to simulate yield
-        // Note: This requires the strategy to have minting capability or pre-funded tokens
-        
         // Transfer yield to vault as reward and notify vault
         if (yieldAmount > 0 && token.balanceOf(address(this)) >= yieldAmount) {
             token.safeTransfer(vault, yieldAmount);
@@ -151,10 +146,19 @@ contract SimpleStrategy is IStrategy, Ownable, ReentrancyGuard {
         return totalAssets;
     }
 
-    // Fungsi untuk pre-fund strategy dengan pairToken (MockUSDT)
+    function getAISlippage() external view override returns (uint256) {
+        if (aiController != address(0)) {
+            return IAIController(aiController).targetSlippageBps();
+        }
+        return 0;
+    }
+
+    // Function for pre-fund strategy with pairToken (MockUSDT)
     function fundPairToken(uint256 amount) external onlyOwner {
         require(amount > 0, "SimpleStrategy: amount must be greater than zero");
         pairToken.safeTransferFrom(msg.sender, address(this), amount);
+        // Approve max for pairToken since it's pre-funded and reused
+        pairToken.forceApprove(mockRouter, type(uint256).max);
     }
 
     function setVault(address _vault) external onlyOwner {
@@ -166,7 +170,7 @@ contract SimpleStrategy is IStrategy, Ownable, ReentrancyGuard {
         aiController = _controller; // zero address disables AI override
     }
 
-    // Fungsi untuk mendapatkan saldo pairToken di strategy
+    // Function to get pairToken balance in strategy
     function getPairTokenBalance() external view returns (uint256) {
         return pairToken.balanceOf(address(this));
     }

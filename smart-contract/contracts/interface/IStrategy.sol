@@ -6,4 +6,5 @@ interface IStrategy {
     function withdrawFromStrategy(uint256 amount, uint256 slippageTolerance, uint256 deadline) external;
     function harvest() external;
     function getStrategyBalance() external view returns (uint256);
+    function getAISlippage() external view returns (uint256);
 }

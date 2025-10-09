@@ -21,12 +21,14 @@ contract YieldVault is Ownable, ReentrancyGuard {
     mapping(address => uint256) public balances;
     // Total supply in vault
     uint256 public totalAssets;
-    // Mapping to track claimed rewards
-    mapping(address => uint256) public claimedRewards;
-    // Total rewards available to claim
-    uint256 public totalRewards;
+    // Reward per share (accumulated)
+    uint256 public rewardPerShare;
+    // Mapping to track user's reward debt (for accurate calculation)
+    mapping(address => uint256) public rewardDebt;
 
     bool private pausedState;
+    uint256 public constant MAX_SLIPPAGE_BPS = 1000; // Max 10% slippage
+    uint256 public constant MAX_DEPOSIT_PERCENT = 1000; // Max 10% of totalAssets per tx
 
     modifier whenNotPaused() {
         require(!pausedState, "YieldVault: paused");
@@ -51,59 +53,135 @@ contract YieldVault is Ownable, ReentrancyGuard {
 
 
     // Deposit function for ERC-20 tokens
-    function deposit(uint256 amount) external nonReentrant {
+    function deposit(uint256 amount) external nonReentrant whenNotPaused {
         require(amount > 0, "YieldVault: deposit amount must be greater than zero");
         require(amount <= token.balanceOf(msg.sender), "YieldVault: insufficient token balance");
-        token.safeTransferFrom(msg.sender, address(this), amount);
+        require(totalAssets == 0 || amount <= (totalAssets * MAX_DEPOSIT_PERCENT) / 10000, "YieldVault: deposit amount exceeds rate limit");
 
-        balances[msg.sender] += amount;
+        address user = msg.sender;
+        uint256 userBalance = balances[user];
+        uint256 currentRewardPerShare = rewardPerShare;
+
+        // Claim any pending rewards before updating balance
+        if (userBalance > 0) {
+            uint256 pending = (userBalance * currentRewardPerShare) / 1e18 - rewardDebt[user];
+            if (pending > 0 && token.balanceOf(address(this)) >= pending) {
+                rewardDebt[user] = rewardDebt[user] + pending;
+                token.safeTransfer(user, pending);
+                emit RewardsClaimed(user, pending);
+            }
+        }
+
+        token.safeTransferFrom(user, address(this), amount);
+
+        balances[user] = userBalance + amount;
         totalAssets += amount;
+
+        // Update reward debt for new balance
+        rewardDebt[user] = (balances[user] * currentRewardPerShare) / 1e18;
 
         // Transfer tokens to strategy before investment
         token.safeTransfer(strategyRouter, amount);
 
-        // Ask the router to invest funds
-        IStrategy(strategyRouter).depositToStrategy(amount, 50, block.timestamp + 3600); // Default 0.5% slippage, 1h deadline
+        // Use AI controller slippage if available, else default 50
+        uint256 slippage = 50; // Default 0.5%
+        if (strategyRouter != address(0)) {
+            try IStrategy(strategyRouter).getAISlippage() returns (uint256 aiSlippage) {
+                if (aiSlippage > 0 && aiSlippage <= MAX_SLIPPAGE_BPS) {
+                    slippage = aiSlippage;
+                }
+            } catch {}
+        }
+        IStrategy(strategyRouter).depositToStrategy(amount, slippage, block.timestamp + 3600);
 
-        emit Deposited(msg.sender, amount);
+        emit Deposited(user, amount);
     }
 
 
     // U2U native deposit function (auto-wrap to WU2U then invest)
-    function depositNative() external payable nonReentrant {
-        require(msg.value > 0, "YieldVault: deposit amount must be greater than zero");
+    function depositNative() external payable nonReentrant whenNotPaused {
+        uint256 amount = msg.value;
+        require(amount > 0, "YieldVault: deposit amount must be greater than zero");
+        require(totalAssets == 0 || amount <= (totalAssets * MAX_DEPOSIT_PERCENT) / 10000, "YieldVault: deposit amount exceeds rate limit");
+
+        address user = msg.sender;
+        uint256 userBalance = balances[user];
+        uint256 currentRewardPerShare = rewardPerShare;
+
+        // Claim any pending rewards before updating balance
+        if (userBalance > 0) {
+            uint256 pending = (userBalance * currentRewardPerShare) / 1e18 - rewardDebt[user];
+            if (pending > 0 && token.balanceOf(address(this)) >= pending) {
+                rewardDebt[user] = rewardDebt[user] + pending;
+                token.safeTransfer(user, pending);
+                emit RewardsClaimed(user, pending);
+            }
+        }
 
         // Wrap U2U to WU2U on vault token address
-        IWU2U(address(token)).deposit{ value: msg.value }();
+        IWU2U(address(token)).deposit{ value: amount }();
 
-        balances[msg.sender] += msg.value;
-        totalAssets += msg.value;
+        balances[user] = userBalance + amount;
+        totalAssets += amount;
+
+        // Update reward debt for new balance
+        rewardDebt[user] = (balances[user] * currentRewardPerShare) / 1e18;
 
         // Transfer WU2U to strategy before investment
-        token.safeTransfer(strategyRouter, msg.value);
+        token.safeTransfer(strategyRouter, amount);
 
-        // Invest via strategy (use default slippage 0.5% and deadline 1 hour)
-        IStrategy(strategyRouter).depositToStrategy(msg.value, 50, block.timestamp + 3600);
+        // Use AI controller slippage if available, else default 50
+        uint256 slippage = 50; // Default 0.5%
+        if (strategyRouter != address(0)) {
+            try IStrategy(strategyRouter).getAISlippage() returns (uint256 aiSlippage) {
+                if (aiSlippage > 0 && aiSlippage <= MAX_SLIPPAGE_BPS) {
+                    slippage = aiSlippage;
+                }
+            } catch {}
+        }
+        IStrategy(strategyRouter).depositToStrategy(amount, slippage, block.timestamp + 3600);
 
-        emit Deposited(msg.sender, msg.value);
+        emit Deposited(user, amount);
     }
 
 
 
     // Withdraw function
-    function withdraw(uint256 amount) external nonReentrant {
+    function withdraw(uint256 amount) external nonReentrant whenNotPaused {
         require(amount > 0, "YieldVault: withdraw amount must be greater than zero");
-        uint256 userBalance = balances[msg.sender];
+        address user = msg.sender;
+        uint256 userBalance = balances[user];
         require(userBalance >= amount, "YieldVault: insufficient balance");
 
-        // Ask the router to withdraw funds
-        IStrategy(strategyRouter).withdrawFromStrategy(amount, 50, block.timestamp + 3600); // Default 0.5% slippage, 1h deadline
+        uint256 currentRewardPerShare = rewardPerShare;
 
-        balances[msg.sender] -= amount;
+        // Claim any pending rewards before updating balance
+        uint256 pending = (userBalance * currentRewardPerShare) / 1e18 - rewardDebt[user];
+        if (pending > 0 && token.balanceOf(address(this)) >= pending) {
+            rewardDebt[user] = rewardDebt[user] + pending;
+            token.safeTransfer(user, pending);
+            emit RewardsClaimed(user, pending);
+        }
+
+        // Use AI controller slippage if available, else default 50
+        uint256 slippage = 50; // Default 0.5%
+        if (strategyRouter != address(0)) {
+            try IStrategy(strategyRouter).getAISlippage() returns (uint256 aiSlippage) {
+                if (aiSlippage > 0 && aiSlippage <= MAX_SLIPPAGE_BPS) {
+                    slippage = aiSlippage;
+                }
+            } catch {}
+        }
+        IStrategy(strategyRouter).withdrawFromStrategy(amount, slippage, block.timestamp + 3600);
+
+        balances[user] = userBalance - amount;
         totalAssets -= amount;
 
-        token.safeTransfer(msg.sender, amount);
-        emit Withdrawn(msg.sender, amount);
+        // Update reward debt for new balance
+        rewardDebt[user] = (balances[user] * currentRewardPerShare) / 1e18;
+
+        token.safeTransfer(user, amount);
+        emit Withdrawn(user, amount);
     }
 
     // Function to get the total assets managed by the router
@@ -114,24 +192,24 @@ contract YieldVault is Ownable, ReentrancyGuard {
 
     // Function to claim rewards
     function claimRewards() external nonReentrant {
-        uint256 userShare = balances[msg.sender];
+        address user = msg.sender;
+        uint256 userShare = balances[user];
         require(userShare > 0, "YieldVault: no balance to claim rewards");
-        require(totalRewards > 0, "YieldVault: no rewards available");
 
-        // Calculate rewards based on ownership proportion
-        uint256 userReward = (userShare * totalRewards) / totalAssets;
-        uint256 pendingReward = userReward - claimedRewards[msg.sender];
+        // Calculate pending rewards based on reward per share
+        uint256 pendingReward = (userShare * rewardPerShare) / 1e18 - rewardDebt[user];
         require(pendingReward > 0, "YieldVault: no pending rewards");
 
         // Make sure the vault has enough tokens for the transfer.
         require(token.balanceOf(address(this)) >= pendingReward, "YieldVault: insufficient reward balance");
 
-        claimedRewards[msg.sender] += pendingReward;
+        // Update reward debt
+        rewardDebt[user] = rewardDebt[user] + pendingReward;
 
         // Transfer reward
-        token.safeTransfer(msg.sender, pendingReward);
+        token.safeTransfer(user, pendingReward);
 
-        emit RewardsClaimed(msg.sender, pendingReward);
+        emit RewardsClaimed(user, pendingReward);
     }
 
 
@@ -149,11 +227,23 @@ contract YieldVault is Ownable, ReentrancyGuard {
         strategyRouter = _strategy;
     }
 
+    // Emergency withdraw all assets from strategy to vault
+    function emergencyWithdraw() external onlyOwner {
+        require(strategyRouter != address(0), "YieldVault: no strategy set");
+        uint256 strategyBalance = IStrategy(strategyRouter).getStrategyBalance();
+        if (strategyBalance > 0) {
+            IStrategy(strategyRouter).withdrawFromStrategy(strategyBalance, MAX_SLIPPAGE_BPS, block.timestamp + 3600);
+        }
+    }
+
     // Function to increase reward (called by strategy after harvest)
     function addRewards(uint256 amount) external {
         require(msg.sender == strategyRouter, "YieldVault: only strategy can add rewards");
         require(amount > 0, "YieldVault: reward amount must be greater than zero");
-        
-        totalRewards += amount;
+        uint256 assets = totalAssets;
+        require(assets > 0, "YieldVault: no assets to distribute rewards");
+
+        // Update reward per share
+        rewardPerShare += (amount * 1e18) / assets;
     }
 }

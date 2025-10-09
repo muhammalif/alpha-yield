@@ -29,7 +29,7 @@ contract AIController is Ownable, IAIController {
     }
 
     function setTargetSlippage(uint256 bps) external onlyStrategist {
-        require(bps <= 10000, "AIController: invalid bps");
+        require(bps <= 1000, "AIController: slippage too high"); // Max 10%
         targetSlippageBps = bps;
         emit TargetSlippageUpdated(bps);
     }

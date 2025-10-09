@@ -54,15 +54,47 @@ describe("AIController integration", function () {
     await expect(strategy.harvest()).to.not.be.reverted;
   });
 
-  it("deposit/withdraw should override slippage from AI controller when set", async function () {
-    await mockUSDT.transfer(user.address, toEth("1000"));
-    await mockUSDT.connect(user).approve(await vault.getAddress(), toEth("100"));
+   it("deposit/withdraw should override slippage from AI controller when set", async function () {
+     await mockUSDT.transfer(user.address, toEth("1000"));
+     await mockUSDT.connect(user).approve(await vault.getAddress(), toEth("100"));
 
-    await controller.connect(strategist).setTargetSlippage(40);
+     await controller.connect(strategist).setTargetSlippage(40);
 
-    await expect(vault.connect(user).deposit(toEth("100"))).to.emit(vault, "Deposited");
-    await expect(vault.connect(user).withdraw(toEth("100"))).to.emit(vault, "Withdrawn");
-  });
+     await expect(vault.connect(user).deposit(toEth("100"))).to.emit(vault, "Deposited");
+     await expect(vault.connect(user).withdraw(toEth("100"))).to.emit(vault, "Withdrawn");
+   });
+
+   it("should reject high slippage", async function () {
+     await expect(controller.connect(strategist).setTargetSlippage(2000)).to.be.revertedWith("AIController: slippage too high");
+   });
+
+   it("should allow valid slippage", async function () {
+     await expect(controller.connect(strategist).setTargetSlippage(500)).to.not.be.reverted;
+     expect(await controller.targetSlippageBps()).to.equal(500);
+   });
+
+   it("should reject set slippage by non-strategist", async function () {
+     await expect(controller.connect(user).setTargetSlippage(500)).to.be.revertedWith("AIController: not strategist");
+   });
+
+   it("should reject set strategist by non-owner", async function () {
+     await expect(controller.connect(user).setStrategist(user.address)).to.be.revertedWithCustomError(controller, "OwnableUnauthorizedAccount");
+   });
+
+   it("should update strategist", async function () {
+     await controller.connect(owner).setStrategist(user.address);
+     expect(await controller.strategist()).to.equal(user.address);
+   });
+
+   it("should handle harvest without AI approval", async function () {
+     const amount = toEth("100");
+     await mockUSDT.transfer(user.address, amount); // Ensure user has balance
+     await mockUSDT.connect(user).approve(await vault.getAddress(), amount);
+     await vault.connect(user).deposit(amount); // Deposit first to have assets
+
+     await controller.connect(strategist).setShouldHarvest(false);
+     await expect(strategy.harvest()).to.be.revertedWith("SimpleStrategy: AI disallows harvest");
+   });
 });
 
 
