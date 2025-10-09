@@ -43,8 +43,10 @@ export function ClaimRewards() {
   const getValidatedVaultAddress = (): `0x${string}` | null => {
     const addr = VAULT_ADDRESS as string | undefined;
     if (!addr || typeof addr !== 'string') return null;
+    if (!addr.startsWith('0x') || addr.length !== 42) return null;
     const isHexAddress = /^0x[a-fA-F0-9]{40}$/.test(addr);
-    return isHexAddress ? (addr as `0x${string}`) : null;
+    if (!isHexAddress) return null;
+    return addr as `0x${string}`;
   };
 
   const handleClaim = async () => {
@@ -106,14 +108,19 @@ export function ClaimRewards() {
             </span>
           </div>
         </div>
-        <Button
-          onClick={handleClaim}
-          disabled={isLoading || pendingRewards === 0n}
-          className="w-full bg-gradient-hero hover:opacity-90"
-        >
-          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Claim Rewards
-        </Button>
+         {pendingRewards === 0n && (
+           <p className="text-sm text-muted-foreground text-center">
+             No rewards available. Harvest must be performed first to generate yields.
+           </p>
+         )}
+         <Button
+           onClick={handleClaim}
+           disabled={isLoading || pendingRewards === 0n}
+           className="w-full bg-gradient-hero hover:opacity-90"
+         >
+           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+           Claim Rewards
+         </Button>
       </CardContent>
     </Card>
   );
