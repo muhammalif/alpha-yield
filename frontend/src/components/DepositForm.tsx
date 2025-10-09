@@ -69,7 +69,7 @@ export function DepositForm() {
         abi: ERC20_ABI,
         functionName: 'approve',
         args: [validatedVault, amountWei],
-        chainId: u2uNebulasTestnet.id,
+
       } as any);
       toast.info('Approval transaction submitted');
     } catch (error) {
@@ -95,7 +95,7 @@ export function DepositForm() {
           abi: VAULT_ABI,
           functionName: 'depositNative',
           value: amountWei,
-          chainId: u2uNebulasTestnet.id,
+  
         } as any);
       } else {
         await deposit({
@@ -103,7 +103,7 @@ export function DepositForm() {
           abi: VAULT_ABI,
           functionName: 'deposit',
           args: [amountWei],
-          chainId: u2uNebulasTestnet.id,
+  
         } as any);
       }
       toast.info('Deposit transaction submitted');

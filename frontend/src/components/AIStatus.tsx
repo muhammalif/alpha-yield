@@ -27,7 +27,6 @@ export function AIStatus() {
         address: STRATEGY_ADDRESS as `0x${string}`,
         abi: STRATEGY_ABI,
         functionName: 'harvest',
-        chain: u2uNebulasTestnet,
         account: address as `0x${string}`,
       });
       toast.success('Harvest initiated successfully!');
