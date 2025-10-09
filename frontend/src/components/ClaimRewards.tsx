@@ -50,11 +50,10 @@ export function ClaimRewards() {
       }
 
       await claimAsync({
-        address: validatedVault,
-        abi: VAULT_ABI,
         address: VAULT_ADDRESS as `0x${string}`,
         abi: VAULT_ABI,
         functionName: 'claimRewards',
+        chain: u2uNebulasTestnet,
         account: address as `0x${string}`,
       });
       toast.info('Claim transaction submitted');
