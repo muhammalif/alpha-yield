@@ -66,7 +66,7 @@ export function ClaimRewards() {
         address: VAULT_ADDRESS as `0x${string}`,
         abi: VAULT_ABI,
         functionName: 'claimRewards',
-        gas: 3000000n, // Set gas limit to avoid estimation issues
+        gas: 500000n, // Set gas limit to avoid estimation issues
       });
       toast.info('Claim transaction submitted');
     } catch (error) {

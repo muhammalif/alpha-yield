@@ -14,7 +14,10 @@ export function ConnectButton() {
 
   useEffect(() => {
     if (isConnected && chainId !== u2uNebulasTestnet.id) {
-      switchChain({ chainId: u2uNebulasTestnet.id });
+      switchChain({ chainId: u2uNebulasTestnet.id }).catch(() => {
+        // If switch fails, the network might not be added
+        alert('Please add the U2U Nebulas Testnet to MetaMask manually.');
+      });
     }
   }, [isConnected, chainId, switchChain]);
 

@@ -71,7 +71,7 @@ export function WithdrawForm() {
         abi: VAULT_ABI,
         functionName: 'withdraw' as const,
         args: [amountWei] as const,
-        gas: 3000000n, // Set gas limit to avoid estimation issues
+        gas: 500000n, // Set gas limit to avoid estimation issues
       });
       toast.info('Withdrawal transaction submitted');
     } catch (error) {

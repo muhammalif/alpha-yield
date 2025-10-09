@@ -23,12 +23,14 @@ export function AIStatus() {
     if (!address) return;
     setIsHarvesting(true);
     try {
+      // @ts-ignore
       await harvestAsync({
         address: STRATEGY_ADDRESS as `0x${string}`,
         abi: STRATEGY_ABI,
         functionName: 'harvest',
         chain: u2uNebulasTestnet,
-        gas: 3000000n, // Set gas limit
+        account: address as `0x${string}`,
+        gas: 500000n, // Set gas limit
       });
       toast.success('Harvest initiated successfully!');
     } catch (error) {
