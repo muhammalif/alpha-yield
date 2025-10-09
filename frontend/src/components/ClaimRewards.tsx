@@ -15,7 +15,7 @@ export function ClaimRewards() {
   const { token, totalRewards } = useVaultData();
   const { vaultBalance, claimedRewards, tokenSymbol, refetch } = useUserData(token);
 
-  const { writeContractAsync: claimAsync, data: hash } = useWriteContract();
+  const { writeContract: claim, data: hash } = useWriteContract();
 
   const { isLoading, isSuccess } = useWaitForTransactionReceipt({
     hash,
@@ -61,11 +61,10 @@ export function ClaimRewards() {
         return;
       }
 
-      await claimAsync({
+      await claim({
         address: VAULT_ADDRESS as `0x${string}`,
         abi: VAULT_ABI,
         functionName: 'claimRewards',
-        chain: u2uNebulasTestnet,
         gas: 3000000n, // Set gas limit to avoid estimation issues
       });
       toast.info('Claim transaction submitted');

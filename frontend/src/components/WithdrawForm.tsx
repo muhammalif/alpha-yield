@@ -17,7 +17,7 @@ export function WithdrawForm() {
   const { vaultBalance, tokenSymbol, refetch } = useUserData(token);
   const [amount, setAmount] = useState('');
 
-  const { writeContractAsync: withdrawAsync, data: hash } = useWriteContract();
+  const { writeContract: withdraw, data: hash } = useWriteContract();
 
   const { isLoading, isSuccess } = useWaitForTransactionReceipt({
     hash,
@@ -65,12 +65,11 @@ export function WithdrawForm() {
       }
       const amountWei = toWei(amount);
 
-      await withdrawAsync({
+      await withdraw({
         address: validatedVault,
         abi: VAULT_ABI,
         functionName: 'withdraw' as const,
         args: [amountWei] as const,
-        chain: u2uNebulasTestnet,
         gas: 3000000n, // Set gas limit to avoid estimation issues
       });
       toast.info('Withdrawal transaction submitted');

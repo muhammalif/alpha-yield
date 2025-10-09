@@ -19,9 +19,9 @@ export function DepositForm() {
   const [amount, setAmount] = useState('');
   const [activeTab, setActiveTab] = useState('token');
 
-  const { writeContract: approve, data: approveHash } = useWriteContract();
-  const { writeContract: deposit, data: depositHash } = useWriteContract();
-  const { writeContract: depositNative, data: depositNativeHash } = useWriteContract();
+  const { writeContract: approveWrite, data: approveHash } = useWriteContract();
+  const { writeContract: depositWrite, data: depositHash } = useWriteContract();
+  const { writeContract: depositNativeWrite, data: depositNativeHash } = useWriteContract();
 
   const { isLoading: isApproving } = useWaitForTransactionReceipt({
     hash: approveHash,
@@ -93,14 +93,14 @@ export function DepositForm() {
         return;
       }
       const amountWei = toWei(amount);
-      await approve({
+      await approveWrite({
         address: token as `0x${string}`,
         abi: ERC20_ABI,
         functionName: 'approve',
         args: [validatedVault, amountWei],
-        chain: u2uNebulasTestnet,
+        account: address as `0x${string}`,
         gas: 100000n, // Set gas limit for approval
-      });
+      } as any);
       toast.info('Approval transaction submitted');
     } catch (error) {
       toast.error('Approval failed');
@@ -120,23 +120,21 @@ export function DepositForm() {
       const amountWei = toWei(amount);
 
       if (activeTab === 'native') {
-        await depositNative({
+        await depositNativeWrite({
           address: validatedVault,
           abi: VAULT_ABI,
           functionName: 'depositNative',
           value: amountWei,
-          chain: u2uNebulasTestnet,
           gas: 3000000n, // Set gas limit
-        });
+        } as any);
       } else {
-        await deposit({
+        await depositWrite({
           address: validatedVault,
           abi: VAULT_ABI,
           functionName: 'deposit',
           args: [amountWei],
-          chain: u2uNebulasTestnet,
           gas: 3000000n, // Set gas limit
-        });
+        } as any);
       }
       toast.info('Deposit transaction submitted');
     } catch (error) {
