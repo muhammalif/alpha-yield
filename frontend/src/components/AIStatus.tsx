@@ -1,13 +1,44 @@
+import { useState } from 'react';
+import { useState } from 'react';
+import { useAccount, useWriteContract } from 'wagmi';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useControllerData } from '@/hooks/useControllerData';
+import { STRATEGY_ADDRESS, STRATEGY_ABI } from '@/config/contracts';
 import { formatPercentage } from '@/lib/formatters';
-import { Brain, Activity } from 'lucide-react';
+import { u2uNebulasTestnet } from '@/config/wagmi';
+import { toast } from 'sonner';
+import { Brain, Activity, Loader2 } from 'lucide-react';
 
 export function AIStatus() {
+  const { address } = useAccount();
   const { targetSlippageBps, shouldHarvest } = useControllerData();
+  const [isHarvesting, setIsHarvesting] = useState(false);
 
   const slippagePercent = Number(targetSlippageBps) / 100;
+
+  const { writeContractAsync: harvestAsync } = useWriteContract();
+
+  const handleHarvest = async () => {
+    if (!address) return;
+    setIsHarvesting(true);
+    try {
+      await harvestAsync({
+        address: STRATEGY_ADDRESS as `0x${string}`,
+        abi: STRATEGY_ABI,
+        functionName: 'harvest',
+        chain: u2uNebulasTestnet,
+        account: address as `0x${string}`,
+      });
+      toast.success('Harvest initiated successfully!');
+    } catch (error) {
+      toast.error('Harvest failed');
+      console.error(error);
+    } finally {
+      setIsHarvesting(false);
+    }
+  };
 
   return (
     <Card className="glass shadow-card">
@@ -40,6 +71,15 @@ export function AIStatus() {
             {shouldHarvest ? 'Active' : 'Standby'}
           </Badge>
         </div>
+
+        <Button
+          onClick={handleHarvest}
+          disabled={isHarvesting}
+          className="w-full bg-gradient-primary hover:opacity-90"
+        >
+          {isHarvesting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Manual Harvest (Strategist Only)
+        </Button>
       </CardContent>
     </Card>
   );
