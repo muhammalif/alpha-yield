@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useState } from 'react';
 import { useAccount, useWriteContract } from 'wagmi';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +12,7 @@ import { Brain, Activity, Loader2 } from 'lucide-react';
 
 export function AIStatus() {
   const { address } = useAccount();
-  const { targetSlippageBps, shouldHarvest } = useControllerData();
+  const { targetSlippageBps, shouldHarvest, strategist, owner } = useControllerData();
   const [isHarvesting, setIsHarvesting] = useState(false);
 
   const slippagePercent = Number(targetSlippageBps) / 100;
@@ -72,14 +71,25 @@ export function AIStatus() {
           </Badge>
         </div>
 
-        <Button
-          onClick={handleHarvest}
-          disabled={isHarvesting}
-          className="w-full bg-gradient-primary hover:opacity-90"
-        >
-          {isHarvesting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Manual Harvest (Strategist Only)
-        </Button>
+        {address?.toLowerCase() === strategist?.toLowerCase() && (
+          <Button
+            onClick={handleHarvest}
+            disabled={isHarvesting}
+            className="w-full bg-gradient-primary hover:opacity-90 mb-2"
+          >
+            {isHarvesting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Manual Harvest
+          </Button>
+        )}
+
+        {address?.toLowerCase() === owner?.toLowerCase() && address?.toLowerCase() !== strategist?.toLowerCase() && (
+          <Button
+            onClick={() => {/* TODO: set strategist */}}
+            className="w-full bg-gradient-secondary hover:opacity-90"
+          >
+            Set as Strategist
+          </Button>
+        )}
       </CardContent>
     </Card>
   );

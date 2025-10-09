@@ -14,8 +14,22 @@ export function useControllerData() {
     functionName: 'shouldHarvest',
   });
 
+  const { data: strategist } = useReadContract({
+    address: CONTROLLER_ADDRESS as `0x${string}`,
+    abi: CONTROLLER_ABI,
+    functionName: 'strategist',
+  });
+
+  const { data: owner } = useReadContract({
+    address: CONTROLLER_ADDRESS as `0x${string}`,
+    abi: CONTROLLER_ABI,
+    functionName: 'owner',
+  });
+
   return {
     targetSlippageBps: targetSlippageBps || 0n,
     shouldHarvest: shouldHarvest || false,
+    strategist: strategist as string,
+    owner: owner as string,
   };
 }
