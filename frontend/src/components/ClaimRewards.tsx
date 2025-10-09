@@ -22,11 +22,23 @@ export function ClaimRewards() {
   });
 
   useEffect(() => {
-    if (isSuccess) {
-      toast.success('Rewards claimed successfully!');
+    if (isSuccess && hash) {
+      toast.success(
+        <div>
+          Rewards claimed successfully!{' '}
+          <a
+            href={`https://testnet.u2uscan.xyz/tx/${hash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
+            View Tx
+          </a>
+        </div>
+      );
       refetch();
     }
-  }, [isSuccess, refetch]);
+  }, [isSuccess, hash, refetch]);
 
   const getValidatedVaultAddress = (): `0x${string}` | null => {
     const addr = VAULT_ADDRESS as string | undefined;
@@ -44,7 +56,7 @@ export function ClaimRewards() {
         toast.error('Vault address is not configured. Set VITE_VAULT_ADDRESS in .env');
         return;
       }
-      if (chainId !== u2uNebulasTestnet.id) {
+      if (chainId && chainId !== u2uNebulasTestnet.id) {
         toast.error('Wrong network. Please switch to U2U Nebulas Testnet.');
         return;
       }
@@ -55,6 +67,7 @@ export function ClaimRewards() {
         functionName: 'claimRewards',
         chain: u2uNebulasTestnet,
         account: address as `0x${string}`,
+        gas: 3000000n, // Set gas limit to avoid estimation issues
       });
       toast.info('Claim transaction submitted');
     } catch (error) {

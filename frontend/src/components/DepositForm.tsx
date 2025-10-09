@@ -36,12 +36,41 @@ export function DepositForm() {
   });
 
   useEffect(() => {
-    if (isDepositSuccess || isDepositNativeSuccess) {
-      toast.success('Deposit successful!');
+    if (isDepositSuccess && depositHash) {
+      toast.success(
+        <div>
+          Deposit successful!{' '}
+          <a
+            href={`https://testnet.u2uscan.xyz/tx/${depositHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
+            View Tx
+          </a>
+        </div>
+      );
       setAmount('');
       refetch();
     }
-  }, [isDepositSuccess, isDepositNativeSuccess, refetch]);
+    if (isDepositNativeSuccess && depositNativeHash) {
+      toast.success(
+        <div>
+          Native deposit successful!{' '}
+          <a
+            href={`https://testnet.u2uscan.xyz/tx/${depositNativeHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
+            View Tx
+          </a>
+        </div>
+      );
+      setAmount('');
+      refetch();
+    }
+  }, [isDepositSuccess, isDepositNativeSuccess, depositHash, depositNativeHash, refetch]);
 
   const needsApproval = () => {
     if (!amount || activeTab !== 'token') return false;
@@ -69,7 +98,7 @@ export function DepositForm() {
         abi: ERC20_ABI,
         functionName: 'approve',
         args: [validatedVault, amountWei],
-
+        gas: 100000n, // Set gas limit for approval
       } as any);
       toast.info('Approval transaction submitted');
     } catch (error) {
@@ -88,14 +117,14 @@ export function DepositForm() {
         return;
       }
       const amountWei = toWei(amount);
-      
+
       if (activeTab === 'native') {
         await depositNative({
           address: validatedVault,
           abi: VAULT_ABI,
           functionName: 'depositNative',
           value: amountWei,
-  
+          gas: 3000000n, // Set gas limit
         } as any);
       } else {
         await deposit({
@@ -103,7 +132,7 @@ export function DepositForm() {
           abi: VAULT_ABI,
           functionName: 'deposit',
           args: [amountWei],
-  
+          gas: 3000000n, // Set gas limit
         } as any);
       }
       toast.info('Deposit transaction submitted');

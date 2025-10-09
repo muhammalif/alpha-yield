@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import { Loader2, ArrowUp } from 'lucide-react';
 
 export function WithdrawForm() {
-  const { address } = useAccount();
+  const { address, chainId } = useAccount();
   const { token } = useVaultData();
   const { vaultBalance, tokenSymbol, refetch } = useUserData(token);
   const [amount, setAmount] = useState('');
@@ -24,12 +24,24 @@ export function WithdrawForm() {
   });
 
   useEffect(() => {
-    if (isSuccess) {
-      toast.success('Withdrawal successful!');
+    if (isSuccess && hash) {
+      toast.success(
+        <div>
+          Withdrawal successful!{' '}
+          <a
+            href={`https://testnet.u2uscan.xyz/tx/${hash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
+            View Tx
+          </a>
+        </div>
+      );
       setAmount('');
       refetch();
     }
-  }, [isSuccess, refetch]);
+  }, [isSuccess, hash, refetch]);
 
   const getValidatedVaultAddress = (): `0x${string}` | null => {
     const addr = VAULT_ADDRESS as string | undefined;
@@ -47,6 +59,10 @@ export function WithdrawForm() {
         toast.error('Vault address is not configured. Set VITE_VAULT_ADDRESS in .env');
         return;
       }
+      if (chainId && chainId !== u2uNebulasTestnet.id) {
+        toast.error('Wrong network. Please switch to U2U Nebulas Testnet.');
+        return;
+      }
       const amountWei = toWei(amount);
 
       await withdrawAsync({
@@ -56,6 +72,7 @@ export function WithdrawForm() {
         args: [amountWei] as const,
         chain: u2uNebulasTestnet,
         account: address as `0x${string}`,
+        gas: 3000000n, // Set gas limit to avoid estimation issues
       });
       toast.info('Withdrawal transaction submitted');
     } catch (error) {
