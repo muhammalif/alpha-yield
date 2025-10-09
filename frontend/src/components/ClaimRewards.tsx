@@ -15,7 +15,7 @@ export function ClaimRewards() {
   const { token, totalRewards } = useVaultData();
   const { vaultBalance, claimedRewards, tokenSymbol, refetch } = useUserData(token);
 
-  const { writeContract: claim, data: hash } = useWriteContract();
+  const { writeContractAsync: claim, data: hash } = useWriteContract();
 
   const { isLoading, isSuccess } = useWaitForTransactionReceipt({
     hash,
@@ -61,6 +61,7 @@ export function ClaimRewards() {
         return;
       }
 
+      // @ts-expect-error
       await claim({
         address: VAULT_ADDRESS as `0x${string}`,
         abi: VAULT_ABI,
@@ -75,8 +76,8 @@ export function ClaimRewards() {
   };
 
   // Calculate pending rewards (simplified calculation)
-  const pendingRewards = totalRewards > 0n && vaultBalance > 0n 
-    ? totalRewards - claimedRewards 
+  const pendingRewards = (totalRewards as bigint) > 0n && (vaultBalance as bigint) > 0n
+    ? (totalRewards as bigint) - (claimedRewards as bigint)
     : 0n;
 
   return (

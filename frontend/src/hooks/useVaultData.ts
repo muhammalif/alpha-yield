@@ -1,7 +1,7 @@
 import { useReadContract } from 'wagmi';
 import { VAULT_ADDRESS, VAULT_ABI, STRATEGY_ADDRESS, STRATEGY_ABI } from '@/config/contracts';
 
-export function useVaultData() {
+export function useVaultData(): { totalAssets: bigint; totalRewards: bigint; strategyBalance: bigint; token: string; refetch: () => void } {
   const { data: totalAssets, refetch: refetchTotalAssets } = useReadContract({
     address: VAULT_ADDRESS as `0x${string}`,
     abi: VAULT_ABI,

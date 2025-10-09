@@ -1,7 +1,7 @@
 import { useAccount, useReadContract, useBalance } from 'wagmi';
 import { VAULT_ADDRESS, VAULT_ABI, ERC20_ABI } from '@/config/contracts';
 
-export function useUserData(tokenAddress?: string) {
+export function useUserData(tokenAddress?: string): { vaultBalance: bigint; claimedRewards: bigint; nativeBalance: bigint; tokenBalance: bigint; tokenSymbol: string; allowance: bigint; refetch: () => void } {
   const { address } = useAccount();
 
   const { data: vaultBalance, refetch: refetchVaultBalance } = useReadContract({

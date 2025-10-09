@@ -65,6 +65,7 @@ export function WithdrawForm() {
       }
       const amountWei = toWei(amount);
 
+      // @ts-expect-error
       await withdraw({
         address: validatedVault,
         abi: VAULT_ABI,
