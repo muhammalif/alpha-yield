@@ -32,9 +32,9 @@ describe("YieldVault", function () {
     await vault.setStrategy(await strategy.getAddress());
 
     // Fund strategy with WU2U
-    await owner.sendTransaction({ to: await mockUSDT.getAddress(), value: toEth("100") });
-    await mockUSDT.approve(await strategy.getAddress(), toEth("100"));
-    await strategy.fundPairToken(toEth("100"));
+    await owner.sendTransaction({ to: await mockUSDT.getAddress(), value: toEth("10000") });
+    await mockUSDT.approve(await strategy.getAddress(), toEth("10000"));
+    await strategy.fundPairToken(toEth("10000"));
   });
 
   it("Should deploy correctly", async function () {

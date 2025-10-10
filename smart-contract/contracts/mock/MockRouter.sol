@@ -129,10 +129,8 @@ contract MockRouter {
         // In a real scenario, this would claim rewards from the protocol
         uint256 reward = totalLiquidity / 100; // 1% reward
         if (reward > 0) {
-            // Assume the contract has tokens to add, but in mock, we skip actual minting
-            // For testing, you can pre-fund the contract with tokens
-            reserve0 += reward / 2;
-            reserve1 += reward / 2;
+            // Transfer reward to caller (strategy)
+            IERC20(token0).safeTransfer(msg.sender, reward);
         }
     }
 

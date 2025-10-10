@@ -91,7 +91,7 @@ contract SimpleStrategy is IStrategy, Ownable, ReentrancyGuard {
 
     function withdrawFromStrategy(uint256 amount, uint256 slippageTolerance, uint256 deadline) external override nonReentrant whenNotPaused onlyVault {
         require(amount > 0, "SimpleStrategy: withdraw amount must be greater than zero");
-        require(slippageTolerance <= 1000, "SimpleStrategy: slippage tolerance too high"); // Max 10%
+        require(slippageTolerance <= 2000, "SimpleStrategy: slippage tolerance too high"); // Max 20%
         if (aiController != address(0)) {
             uint256 aiBps = IAIController(aiController).targetSlippageBps();
             if (aiBps > 0 && aiBps <= 10000) {
