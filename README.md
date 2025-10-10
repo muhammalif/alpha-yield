@@ -1,6 +1,6 @@
 # AlphaYield
 
-An AI-powered yield aggregator decentralized application (dApp) built for the U2U Nebulas Testnet. AlphaYield automates yield farming strategies using intelligent AI controllers to optimize returns across various DeFi protocols.
+An AI-powered yield aggregator decentralized application built for the U2U Network. AlphaYield automates yield farming strategies using intelligent AI controllers to optimize returns across various DeFi protocols.
 
 ## Features
 
@@ -35,42 +35,6 @@ a-yield/
 - **Explorer**: https://testnet.u2uscan.xyz
 - **Currency**: U2U
 
-## Installation & Setup
-
-### 1. Smart Contracts
-
-```bash
-cd smart-contract
-npm install
-npx hardhat compile
-npx hardhat test
-npx hardhat run scripts/deploy.ts --network nebulasTestnet
-```
-
-For detailed smart contract setup, see [smart-contract/README.md](smart-contract/README.md).
-
-### 2. Frontend dApp
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Configure contract addresses in `frontend/src/config/contracts.ts` after deployment.
-
-For detailed frontend setup, see [frontend/README.md](frontend/README.md) and [frontend/SETUP.md](frontend/SETUP.md).
-
-### 3. AI Agent
-
-```bash
-cd ai-agent
-npm install
-npm run dev
-```
-
-Configure environment variables for contract addresses and private keys.
-
 ## Usage
 
 1. **Connect Wallet**: Use MetaMask to connect to U2U Nebulas Testnet
@@ -96,30 +60,6 @@ Configure environment variables for contract addresses and private keys.
 - **Harvest Job**: Automated yield harvesting
 - **Slippage Job**: Slippage management for optimal trades
 
-## Development
-
-### Testing
-```bash
-# Smart contracts
-cd smart-contract && npx hardhat test
-
-# Frontend
-cd frontend && npm run lint
-```
-
-### Building
-```bash
-# Frontend production build
-cd frontend && npm run build
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
 
 ## License
 
@@ -134,4 +74,4 @@ For issues or questions:
 
 ## Disclaimer
 
-This is experimental software for the U2U Nebulas Testnet. Use at your own risk. Always test thoroughly before mainnet deployment.
+This dApps building on U2U Network to participate on VietBUIDL Hackathon.
