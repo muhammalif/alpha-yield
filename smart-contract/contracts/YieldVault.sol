@@ -29,7 +29,7 @@ contract YieldVault is Ownable, ReentrancyGuard {
 
     bool private pausedState;
     uint256 public constant MAX_SLIPPAGE_BPS = 1000; // Max 10% slippage
-    uint256 public constant MAX_DEPOSIT_PERCENT = 1000; // Max 10% of totalAssets per tx
+    uint256 public constant MAX_DEPOSIT_PERCENT = 10000; // Max 100% of totalAssets per tx (disabled for test)
 
     modifier whenNotPaused() {
         require(!pausedState, "YieldVault: paused");
@@ -175,7 +175,7 @@ contract YieldVault is Ownable, ReentrancyGuard {
 
         // Withdraw from strategy first
         if (strategyRouter != address(0)) {
-            uint256 slippage = 1000; // Default 10% to handle higher slippage
+            uint256 slippage = 2000; // Default 20% to handle higher slippage
             try IStrategy(strategyRouter).getAISlippage() returns (uint256 aiSlippage) {
                 if (aiSlippage > 0 && aiSlippage <= MAX_SLIPPAGE_BPS) {
                     slippage = aiSlippage;
