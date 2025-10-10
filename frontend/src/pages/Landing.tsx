@@ -106,7 +106,7 @@ const Landing = () => {
             <span className="font-bold">AlphaYield</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            Built on U2U Nebulas Testnet
+            Built on U2U Network
           </p>
         </div>
       </footer>

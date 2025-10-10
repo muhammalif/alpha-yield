@@ -50,8 +50,7 @@ const AppPage = () => {
                 Connect Your Wallet
               </h2>
               <p className="text-muted-foreground">
-                Connect your wallet to start earning AI-optimized yields on
-                U2U Nebulas Testnet.
+                Connect your wallet to start earning AI-optimized yields on U2U Network.
               </p>
               <ConnectButton />
             </div>
