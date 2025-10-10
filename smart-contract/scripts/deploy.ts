@@ -106,11 +106,7 @@ async function main() {
   await mockUSDT.transfer(await simpleStrategy.getAddress(), fundAmount);
   console.log("Strategy funded with MockUSDT via direct transfer");
 
-  // Pre-fund strategy with MockToken for yield simulation
-  console.log("\n💰 Pre-funding strategy with MockToken for yield...");
-  const yieldFundAmount = ethers.parseEther("10000");
-  await mockToken.transfer(await simpleStrategy.getAddress(), yieldFundAmount);
-  console.log("Strategy funded with MockToken for yield");
+   // Note: Skipping WU2U funding for now - add liquidity manually if needed
 
   console.log("\n✅ Deployment completed successfully!");
   console.log("\n📋 Contract Addresses:");
