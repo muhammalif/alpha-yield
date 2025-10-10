@@ -120,21 +120,21 @@ export function DepositForm() {
       const amountWei = toWei(amount);
 
       if (activeTab === 'native') {
-        await depositNativeWrite({
-          address: validatedVault,
-          abi: VAULT_ABI,
-          functionName: 'depositNative',
-          value: amountWei,
-          gas: 500000n, // Set gas limit
-        } as any);
+         await depositNativeWrite({
+           address: validatedVault,
+           abi: VAULT_ABI,
+           functionName: 'depositNative',
+           value: amountWei,
+           gas: 1000000n, // Set gas limit
+         } as any);
       } else {
-        await depositWrite({
-          address: validatedVault,
-          abi: VAULT_ABI,
-          functionName: 'deposit',
-          args: [amountWei],
-          gas: 500000n, // Set gas limit
-        } as any);
+         await depositWrite({
+           address: validatedVault,
+           abi: VAULT_ABI,
+           functionName: 'deposit',
+           args: [amountWei],
+           gas: 1000000n, // Set gas limit
+         } as any);
       }
       toast.info('Deposit transaction submitted');
     } catch (error) {
