@@ -121,6 +121,7 @@ contract YieldVault is Ownable, ReentrancyGuard {
 
         // Wrap U2U to WU2U on vault token address
         IWU2U(address(token)).deposit{ value: amount }();
+        emit Deposited(user, amount); // Temp event after wrap
 
         balances[user] = userBalance + amount;
         totalAssets += amount;
@@ -129,6 +130,8 @@ contract YieldVault is Ownable, ReentrancyGuard {
         rewardDebt[user] = (balances[user] * currentRewardPerShare) / 1e18;
 
         // Transfer WU2U to strategy before investment
+        uint256 vaultBalance = token.balanceOf(address(this));
+        require(vaultBalance >= amount, "Vault insufficient WU2U");
         token.safeTransfer(strategyRouter, amount);
 
         // Use AI controller slippage if available, else default 50

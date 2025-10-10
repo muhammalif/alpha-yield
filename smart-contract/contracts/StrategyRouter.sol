@@ -28,7 +28,7 @@ contract SimpleStrategy is IStrategy, Ownable, ReentrancyGuard {
 
     IERC20 public immutable token; // U2U token
     IERC20 public immutable pairToken; // Mock pair token
-    address public immutable mockRouter; // MockRouter address
+    address public mockRouter; // MockRouter address
     address public vault; // Vault address for rewardss
     address public aiController; // optional AI controller
 
@@ -50,6 +50,11 @@ contract SimpleStrategy is IStrategy, Ownable, ReentrancyGuard {
         pairToken = IERC20(_pairToken);
         mockRouter = _mockRouter;
         vault = _vault;
+    }
+
+    function setMockRouter(address _mockRouter) external onlyOwner {
+        require(_mockRouter != address(0), "SimpleStrategy: mock router cannot be zero");
+        mockRouter = _mockRouter;
     }
 
     function depositToStrategy(uint256 amount, uint256 slippageTolerance, uint256 deadline) external override nonReentrant whenNotPaused onlyVault {
