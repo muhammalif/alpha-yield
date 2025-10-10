@@ -75,8 +75,9 @@ export function WithdrawForm() {
       });
       toast.info('Withdrawal transaction submitted');
     } catch (error) {
-      toast.error('Withdrawal failed');
-      console.error(error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      toast.error(`Withdrawal failed: ${errorMessage}`);
+      console.error('Withdrawal error:', error);
     }
   };
 

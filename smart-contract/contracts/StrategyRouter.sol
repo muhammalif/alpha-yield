@@ -34,7 +34,7 @@ contract SimpleStrategy is IStrategy, Ownable, ReentrancyGuard {
 
     uint256 private totalAssets;
     uint256 private liquidityProvided;
-    uint256 public constant SLIPPAGE_TOLERANCE = 50; // 0.5% slippage
+    uint256 public constant SLIPPAGE_TOLERANCE = 1000; // 10% slippage
 
     modifier onlyVault() {
         require(msg.sender == vault, "SimpleStrategy: only vault can call this function");

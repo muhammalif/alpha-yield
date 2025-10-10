@@ -156,6 +156,7 @@ contract YieldVault is Ownable, ReentrancyGuard {
         address user = msg.sender;
         require(balances[user] >= amount, "YieldVault: insufficient user balance");
         require(amount > 0, "YieldVault: withdraw amount must be greater than zero");
+        require(amount <= totalAssets, "YieldVault: withdraw amount exceeds total invested assets");
 
         uint256 userBalance = balances[user];
         uint256 currentRewardPerShare = rewardPerShare;
@@ -174,7 +175,7 @@ contract YieldVault is Ownable, ReentrancyGuard {
 
         // Withdraw from strategy first
         if (strategyRouter != address(0)) {
-            uint256 slippage = 500; // Default 5% to handle slippage
+            uint256 slippage = 1000; // Default 10% to handle higher slippage
             try IStrategy(strategyRouter).getAISlippage() returns (uint256 aiSlippage) {
                 if (aiSlippage > 0 && aiSlippage <= MAX_SLIPPAGE_BPS) {
                     slippage = aiSlippage;
