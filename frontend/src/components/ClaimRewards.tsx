@@ -12,8 +12,8 @@ import { Loader2, Gift } from 'lucide-react';
 
 export function ClaimRewards() {
   const { address, chainId } = useAccount();
-  const { token, totalRewards } = useVaultData();
-  const { vaultBalance, claimedRewards, tokenSymbol, refetch } = useUserData(token);
+  const { token } = useVaultData();
+  const { vaultBalance, tokenSymbol, refetch } = useUserData(token);
 
   const { writeContractAsync: claim, data: hash } = useWriteContract();
 
@@ -63,7 +63,7 @@ export function ClaimRewards() {
         return;
       }
 
-      // @ts-expect-error
+      // @ts-expect-error: wagmi type inference issue with dynamic ABI
       await claim({
         address: VAULT_ADDRESS as `0x${string}`,
         abi: VAULT_ABI,
@@ -76,11 +76,6 @@ export function ClaimRewards() {
       console.error(error);
     }
   };
-
-  // Calculate pending rewards (simplified calculation)
-  const pendingRewards = (totalRewards as bigint) > 0n && (vaultBalance as bigint) > 0n
-    ? (totalRewards as bigint) - (claimedRewards as bigint)
-    : 0n;
 
   return (
     <Card className="glass shadow-card">
@@ -96,32 +91,26 @@ export function ClaimRewards() {
       <CardContent className="space-y-4">
         <div className="p-4 rounded-lg bg-muted/50 space-y-2">
           <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Pending Rewards</span>
+            <span className="text-sm text-muted-foreground">Vault Balance</span>
             <span className="text-lg font-bold gradient-text">
-              {formatBalance(pendingRewards)} {tokenSymbol}
-            </span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Total Claimed</span>
-            <span className="text-sm">
-              {formatBalance(claimedRewards)} {tokenSymbol}
+              {formatBalance(vaultBalance)} {tokenSymbol}
             </span>
           </div>
         </div>
-         {pendingRewards === 0n && (
+         {vaultBalance === 0n && (
            <p className="text-sm text-muted-foreground text-center">
-             No rewards available. Harvest must be performed first to generate yields.
+             No balance in vault. Deposit first to earn rewards.
            </p>
          )}
          <Button
            onClick={handleClaim}
-           disabled={isLoading || pendingRewards === 0n}
+           disabled={isLoading || vaultBalance === 0n}
            className="w-full bg-gradient-hero hover:opacity-90"
          >
            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
            Claim Rewards
          </Button>
-      </CardContent>
-    </Card>
-  );
+       </CardContent>
+     </Card>
+   );
 }

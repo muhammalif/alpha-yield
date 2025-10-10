@@ -65,7 +65,7 @@ export function WithdrawForm() {
       }
       const amountWei = toWei(amount);
 
-      // @ts-expect-error
+      // @ts-expect-error: wagmi type inference issue with dynamic ABI
       await withdraw({
         address: validatedVault,
         abi: VAULT_ABI,

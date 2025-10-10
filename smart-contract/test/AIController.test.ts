@@ -10,8 +10,8 @@ describe("AIController integration", function () {
   beforeEach(async function () {
     [owner, strategist, user] = await ethers.getSigners();
 
-    const MockUSDT = await ethers.getContractFactory("MockUSDT");
-    mockUSDT = await MockUSDT.deploy();
+    const WrappedU2U = await ethers.getContractFactory("WrappedU2U");
+    mockUSDT = await WrappedU2U.deploy();
     await mockUSDT.waitForDeployment();
 
     const MockRouter = await ethers.getContractFactory("MockRouter");
@@ -32,9 +32,10 @@ describe("AIController integration", function () {
     await strategy.waitForDeployment();
     await vault.setStrategy(await strategy.getAddress());
 
-    await mockUSDT.approve(await strategy.getAddress(), toEth("100000"));
-    await strategy.fundPairToken(toEth("100000"));
-    await mockUSDT.transfer(await strategy.getAddress(), toEth("1000"));
+    // Fund strategy
+    await owner.sendTransaction({ to: await mockUSDT.getAddress(), value: toEth("100") });
+    await mockUSDT.approve(await strategy.getAddress(), toEth("100"));
+    await strategy.fundPairToken(toEth("100"));
 
     const AIController = await ethers.getContractFactory("AIController");
     controller = await AIController.deploy(owner.address, strategist.address);
@@ -44,9 +45,7 @@ describe("AIController integration", function () {
   });
 
   it("harvest should respect AI shouldHarvest flag", async function () {
-    await mockUSDT.transfer(user.address, toEth("100"));
-    await mockUSDT.connect(user).approve(await vault.getAddress(), toEth("100"));
-    await vault.connect(user).deposit(toEth("100"));
+    await vault.connect(user).depositNative({ value: toEth("100") });
 
     await expect(strategy.harvest()).to.be.revertedWith("SimpleStrategy: AI disallows harvest");
 
@@ -54,15 +53,12 @@ describe("AIController integration", function () {
     await expect(strategy.harvest()).to.not.be.reverted;
   });
 
-   it("deposit/withdraw should override slippage from AI controller when set", async function () {
-     await mockUSDT.transfer(user.address, toEth("1000"));
-     await mockUSDT.connect(user).approve(await vault.getAddress(), toEth("100"));
+    it("deposit/withdraw should override slippage from AI controller when set", async function () {
+      await controller.connect(strategist).setTargetSlippage(40);
 
-     await controller.connect(strategist).setTargetSlippage(40);
-
-     await expect(vault.connect(user).deposit(toEth("100"))).to.emit(vault, "Deposited");
-     await expect(vault.connect(user).withdraw(toEth("100"))).to.emit(vault, "Withdrawn");
-   });
+      await expect(vault.connect(user).depositNative({ value: toEth("100") })).to.emit(vault, "Deposited");
+      await expect(vault.connect(user).withdraw(toEth("100"))).to.emit(vault, "Withdrawn");
+    });
 
    it("should reject high slippage", async function () {
      await expect(controller.connect(strategist).setTargetSlippage(2000)).to.be.revertedWith("AIController: slippage too high");
@@ -86,15 +82,13 @@ describe("AIController integration", function () {
      expect(await controller.strategist()).to.equal(user.address);
    });
 
-   it("should handle harvest without AI approval", async function () {
-     const amount = toEth("100");
-     await mockUSDT.transfer(user.address, amount); // Ensure user has balance
-     await mockUSDT.connect(user).approve(await vault.getAddress(), amount);
-     await vault.connect(user).deposit(amount); // Deposit first to have assets
+    it("should handle harvest without AI approval", async function () {
+      const amount = toEth("100");
+      await vault.connect(user).depositNative({ value: amount }); // Deposit first to have assets
 
-     await controller.connect(strategist).setShouldHarvest(false);
-     await expect(strategy.harvest()).to.be.revertedWith("SimpleStrategy: AI disallows harvest");
-   });
+      await controller.connect(strategist).setShouldHarvest(false);
+      await expect(strategy.harvest()).to.be.revertedWith("SimpleStrategy: AI disallows harvest");
+    });
 });
 
 

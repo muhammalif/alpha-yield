@@ -9,6 +9,7 @@ import "./interface/IStrategy.sol";
 
 interface IWU2U {
     function deposit() external payable;
+    function withdraw(uint256 wad) external;
 }
 
 contract YieldVault is Ownable, ReentrancyGuard {
@@ -148,31 +149,24 @@ contract YieldVault is Ownable, ReentrancyGuard {
 
     // Withdraw function
     function withdraw(uint256 amount) external nonReentrant whenNotPaused {
-        require(amount > 0, "YieldVault: withdraw amount must be greater than zero");
         address user = msg.sender;
-        uint256 userBalance = balances[user];
-        require(userBalance >= amount, "YieldVault: insufficient balance");
+        require(balances[user] >= amount, "YieldVault: insufficient user balance");
+        require(amount > 0, "YieldVault: withdraw amount must be greater than zero");
 
+        uint256 userBalance = balances[user];
         uint256 currentRewardPerShare = rewardPerShare;
 
         // Claim any pending rewards before updating balance
-        uint256 pending = (userBalance * currentRewardPerShare) / 1e18 - rewardDebt[user];
-        if (pending > 0 && token.balanceOf(address(this)) >= pending) {
-            rewardDebt[user] = rewardDebt[user] + pending;
-            token.safeTransfer(user, pending);
-            emit RewardsClaimed(user, pending);
+        if (userBalance > 0) {
+            uint256 pending = (userBalance * currentRewardPerShare) / 1e18 - rewardDebt[user];
+            if (pending > 0 && token.balanceOf(address(this)) >= pending) {
+                rewardDebt[user] = rewardDebt[user] + pending;
+                // Unwrap WU2U rewards to U2U and transfer
+                IWU2U(address(token)).withdraw(pending);
+                payable(user).transfer(pending);
+                emit RewardsClaimed(user, pending);
+            }
         }
-
-        // Use AI controller slippage if available, else default 50
-        uint256 slippage = 50; // Default 0.5%
-        if (strategyRouter != address(0)) {
-            try IStrategy(strategyRouter).getAISlippage() returns (uint256 aiSlippage) {
-                if (aiSlippage > 0 && aiSlippage <= MAX_SLIPPAGE_BPS) {
-                    slippage = aiSlippage;
-                }
-            } catch {}
-        }
-        IStrategy(strategyRouter).withdrawFromStrategy(amount, slippage, block.timestamp + 3600);
 
         balances[user] = userBalance - amount;
         totalAssets -= amount;
@@ -180,7 +174,21 @@ contract YieldVault is Ownable, ReentrancyGuard {
         // Update reward debt for new balance
         rewardDebt[user] = (balances[user] * currentRewardPerShare) / 1e18;
 
-        token.safeTransfer(user, amount);
+        // Withdraw from strategy first
+        if (strategyRouter != address(0)) {
+            uint256 slippage = 50; // Default 0.5%
+            try IStrategy(strategyRouter).getAISlippage() returns (uint256 aiSlippage) {
+                if (aiSlippage > 0 && aiSlippage <= MAX_SLIPPAGE_BPS) {
+                    slippage = aiSlippage;
+                }
+            } catch {}
+            IStrategy(strategyRouter).withdrawFromStrategy(amount, slippage, block.timestamp + 3600);
+        }
+
+        // Unwrap WU2U to U2U and transfer native token to user
+        IWU2U(address(token)).withdraw(amount);
+        payable(user).transfer(amount);
+
         emit Withdrawn(user, amount);
     }
 
@@ -206,8 +214,9 @@ contract YieldVault is Ownable, ReentrancyGuard {
         // Update reward debt
         rewardDebt[user] = rewardDebt[user] + pendingReward;
 
-        // Transfer reward
-        token.safeTransfer(user, pendingReward);
+        // Unwrap WU2U rewards to U2U and transfer
+        IWU2U(address(token)).withdraw(pendingReward);
+        payable(user).transfer(pendingReward);
 
         emit RewardsClaimed(user, pendingReward);
     }
