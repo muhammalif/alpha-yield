@@ -1,7 +1,7 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  const vaultAddress = "0x549E3E621244Dca1B5aAfA881030C12e0FbbAc02";
+  const vaultAddress = "0x7e80B8e7dF6F8A09BD2899D3BD49B26EA2cf9c40";
   const vault = await ethers.getContractAt("YieldVault", vaultAddress);
 
   const strategy = await vault.strategyRouter();

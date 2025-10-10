@@ -28,7 +28,7 @@ contract YieldVault is Ownable, ReentrancyGuard {
     mapping(address => uint256) public rewardDebt;
 
     bool private pausedState;
-    uint256 public constant MAX_SLIPPAGE_BPS = 1000; // Max 10% slippage
+    uint256 public constant MAX_SLIPPAGE_BPS = 2000; // Max 20% slippage
     uint256 public constant MAX_DEPOSIT_PERCENT = 10000; // Max 100% of totalAssets per tx (disabled for test)
 
     modifier whenNotPaused() {

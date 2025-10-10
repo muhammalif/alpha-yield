@@ -1,8 +1,8 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  const strategyAddress = "0x25499A7342409a23D6C885eAAE1CCeE8Ca61dA95";
-  const mockRouterAddress = "0xea6A09f507fa662462700Ec28c8e105cc5ee1AD9";
+  const strategyAddress = "0xB98AFAC9B8Eb06211646dED6109c801af5964D9A";
+  const mockRouterAddress = "0x5B43b1f153fe2E5fe5d634eB2669d53dcBf94cBd";
 
   const strategy = await ethers.getContractAt("SimpleStrategy", strategyAddress);
 

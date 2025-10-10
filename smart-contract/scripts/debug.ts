@@ -4,12 +4,11 @@ async function main() {
   const signers = await ethers.getSigners();
   const deployer = signers[0];
 
-  // Contract addresses from latest deployment
-  const vaultAddress = "0xE595980E22Bb751b8505d1b1C88377E1B013A472";
-  const strategyAddress = "0x7f4F0d97DC2D0175961f1745248783F04057158b";
-  const mockRouterAddress = "0x9CDa308197389a21F86F9e204b539be1e2c19f4f";
-  const wrappedU2UAddress = "0x0E5Fc56D4096210Bb2438d92bA0f9e868073d2f7";
-  const mockUSDTAddress = "0x4E2617e01273f4f69379Eb3851A50d732e7BF4A3";
+  const vaultAddress = "0x7e80B8e7dF6F8A09BD2899D3BD49B26EA2cf9c40";
+  const strategyAddress = "0xB98AFAC9B8Eb06211646dED6109c801af5964D9A";
+  const mockRouterAddress = "0x5B43b1f153fe2E5fe5d634eB2669d53dcBf94cBd";
+  const wrappedU2UAddress = "0x116cD92830fA1480bdCcb3E87da320ec9DA09EE4";
+  const mockUSDTAddress = "0xf067bB7B1ce8640c7FcaB0F71F47C074A327D317";
 
   const vault = await ethers.getContractAt("YieldVault", vaultAddress, deployer);
   const strategy = await ethers.getContractAt("SimpleStrategy", strategyAddress, deployer);

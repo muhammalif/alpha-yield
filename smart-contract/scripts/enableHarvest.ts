@@ -5,7 +5,7 @@ async function main() {
   const deployer = signers[0];
 
   // AIController address from latest deployment
-  const controllerAddress = "0x0E23B8298c3367713b60F54755070EbF3c994194";
+  const controllerAddress = "0xb0adB1a08E10264C6bDF8c33b8EA3633EcC9Cc44";
   const controller = await ethers.getContractAt("AIController", controllerAddress, deployer);
 
   console.log("Enabling harvest...");
