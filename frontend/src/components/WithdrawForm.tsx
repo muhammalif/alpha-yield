@@ -6,14 +6,14 @@ import { TokenAmountInput } from './TokenAmountInput';
 import { VAULT_ADDRESS, VAULT_ABI } from '@/config/contracts';
 import { useUserData } from '@/hooks/useUserData';
 import { useVaultData } from '@/hooks/useVaultData';
-import { toWei } from '@/lib/formatters';
+import { toWei, formatBalance } from '@/lib/formatters';
 import { u2uNebulasTestnet } from '@/config/wagmi';
 import { toast } from 'sonner';
-import { Loader2, ArrowUp } from 'lucide-react';
+import { Loader2, ArrowUp, AlertTriangle } from 'lucide-react';
 
 export function WithdrawForm() {
   const { address, chainId } = useAccount();
-  const { token } = useVaultData();
+  const { token, totalAssets } = useVaultData();
   const { vaultBalance, tokenSymbol, refetch } = useUserData(token);
   const [amount, setAmount] = useState('');
 
@@ -53,6 +53,12 @@ export function WithdrawForm() {
   const handleWithdraw = async () => {
     if (!address || !amount) return;
 
+    const amountWei = toWei(amount);
+    if (amountWei > totalAssets) {
+      toast.error(`Withdraw amount exceeds total invested assets (${formatBalance(totalAssets)} ${tokenSymbol}). Max withdrawable: ${formatBalance(totalAssets)} ${tokenSymbol}`);
+      return;
+    }
+
     try {
       const validatedVault = getValidatedVaultAddress();
       if (!validatedVault) {
@@ -63,7 +69,6 @@ export function WithdrawForm() {
         toast.error('Wrong network. Please switch to U2U Nebulas Testnet.');
         return;
       }
-      const amountWei = toWei(amount);
 
       // @ts-expect-error: wagmi type inference issue with dynamic ABI
       await withdraw({
@@ -100,9 +105,17 @@ export function WithdrawForm() {
           symbol={tokenSymbol}
           disabled={isLoading}
         />
+        {amount && toWei(amount) > totalAssets && (
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+            <AlertTriangle className="h-4 w-4 text-yellow-500" />
+            <span className="text-sm text-yellow-700 dark:text-yellow-300">
+              Amount exceeds total invested assets. Max withdrawable: {formatBalance(totalAssets)} {tokenSymbol}
+            </span>
+          </div>
+        )}
         <Button
           onClick={handleWithdraw}
-          disabled={isLoading || !amount || vaultBalance === 0n}
+          disabled={isLoading || !amount || vaultBalance === 0n || toWei(amount) > totalAssets}
           className="w-full bg-gradient-accent hover:opacity-90"
         >
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
