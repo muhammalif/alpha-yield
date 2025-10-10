@@ -28,7 +28,7 @@ const Landing = () => {
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Maximize your DeFi returns with intelligent, automated yield strategies
-            powered by advanced AI algorithms on U2U Nebulas Testnet.
+            powered by advanced AI algorithms on U2U Solaris Mainnet.
           </p>
           <div className="flex gap-4 justify-center">
             <Link to="/app">

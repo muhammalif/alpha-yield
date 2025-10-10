@@ -2,9 +2,9 @@ import { http, createConfig, createStorage } from 'wagmi';
 import { defineChain } from 'viem';
 import { injected } from 'wagmi/connectors';
 
-export const u2uNebulasTestnet = defineChain({
-  id: 2484,
-  name: 'U2U Nebulas Testnet',
+export const u2uSolarisMainnet = defineChain({
+  id: 39,
+  name: 'U2U Solaris Mainnet',
   nativeCurrency: {
     decimals: 18,
     name: 'U2U',
@@ -12,23 +12,23 @@ export const u2uNebulasTestnet = defineChain({
   },
   rpcUrls: {
     default: {
-      http: ['https://rpc-nebulas-testnet.u2u.xyz/'],
+      http: ['https://rpc-mainnet.u2u.xyz/'],
     },
   },
   blockExplorers: {
     default: {
       name: 'U2U Scan',
-      url: 'https://testnet.u2uscan.xyz',
+      url: 'https://u2uscan.xyz',
     },
   },
-  testnet: true,
+  testnet: false,
 });
 
 export const config = createConfig({
-  chains: [u2uNebulasTestnet],
+  chains: [u2uSolarisMainnet],
   connectors: [injected()],
   transports: {
-    [u2uNebulasTestnet.id]: http(),
+    [u2uSolarisMainnet.id]: http(),
   },
   storage: createStorage({ storage: window.localStorage }),
 });

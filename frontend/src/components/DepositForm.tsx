@@ -8,7 +8,7 @@ import { VAULT_ADDRESS, VAULT_ABI, ERC20_ABI } from '@/config/contracts';
 import { useUserData } from '@/hooks/useUserData';
 import { useVaultData } from '@/hooks/useVaultData';
 import { toWei } from '@/lib/formatters';
-import { u2uNebulasTestnet } from '@/config/wagmi';
+import { u2uSolarisMainnet } from '@/config/wagmi';
 import { toast } from 'sonner';
 import { Loader2, ArrowDown } from 'lucide-react';
 
@@ -41,7 +41,7 @@ export function DepositForm() {
         <div>
           Deposit successful!{' '}
           <a
-            href={`https://testnet.u2uscan.xyz/tx/${depositHash}`}
+            href={`https://u2uscan.xyz/tx/${depositHash}`}
             target="_blank"
             rel="noopener noreferrer"
             className="underline"
@@ -58,7 +58,7 @@ export function DepositForm() {
         <div>
           Native deposit successful!{' '}
           <a
-            href={`https://testnet.u2uscan.xyz/tx/${depositNativeHash}`}
+            href={`https://u2uscan.xyz/tx/${depositNativeHash}`}
             target="_blank"
             rel="noopener noreferrer"
             className="underline"

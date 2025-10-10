@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useAccount, useConnect, useDisconnect, useSwitchChain } from 'wagmi';
 import { injected } from 'wagmi/connectors';
-import { u2uNebulasTestnet } from '@/config/wagmi';
+import { u2uSolarisMainnet } from '@/config/wagmi';
 import { Button } from '@/components/ui/button';
 import { Wallet, LogOut } from 'lucide-react';
 import { shortenAddress } from '@/lib/formatters';
@@ -13,12 +13,12 @@ export function ConnectButton() {
   const { switchChain } = useSwitchChain();
 
   useEffect(() => {
-    if (isConnected && chainId !== u2uNebulasTestnet.id) {
+    if (isConnected && chainId !== u2uSolarisMainnet.id) {
       try {
-        switchChain({ chainId: u2uNebulasTestnet.id });
+        switchChain({ chainId: u2uSolarisMainnet.id });
       } catch {
         // If switch fails, the network might not be added
-        alert('Please add the U2U Nebulas Testnet to MetaMask manually.');
+        alert('Please add the U2U Solaris Mainnet to MetaMask manually.');
       }
     }
   }, [isConnected, chainId, switchChain]);

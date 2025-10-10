@@ -12,29 +12,11 @@ async function main() {
   console.log("Deploying contracts with account:", deployerAddress);
   console.log("Account balance:", (await deployer.provider.getBalance(deployerAddress)).toString());
 
-  // Deploy MockUSDT
-  console.log("\n📦 Deploying MockUSDT...");
-  const MockUSDT = await ethers.getContractFactory("MockUSDT");
-  const mockUSDT = await MockUSDT.deploy();
-  await mockUSDT.waitForDeployment();
-  const mockUSDTAddress = await mockUSDT.getAddress();
-  console.log("MockUSDT deployed to:", mockUSDTAddress);
-
-  // Deploy MockToken (U2U simulation)
-  console.log("\n📦 Deploying MockToken (U2U simulation)...");
-  const MockToken = await ethers.getContractFactory("MockToken");
-  const mockToken = await MockToken.deploy("Mock U2U", "mU2U", ethers.parseEther("1000000"));
-  await mockToken.waitForDeployment();
-  const mockTokenAddress = await mockToken.getAddress();
-  console.log("MockToken deployed to:", mockTokenAddress);
-
-  // Deploy WrappedU2U
-  console.log("\n📦 Deploying WrappedU2U...");
-  const WrappedU2U = await ethers.getContractFactory("WrappedU2U");
-  const wrappedU2U = await WrappedU2U.deploy();
-  await wrappedU2U.waitForDeployment();
-  const wrappedU2UAddress = await wrappedU2U.getAddress();
-  console.log("WrappedU2U deployed to:", wrappedU2UAddress);
+  // Use mainnet addresses
+  const wrappedU2UAddress = "0xA99cf32e9aAa700f9E881BA9BF2C57A211ae94df"; // WU2U mainnet
+  const mockUSDTAddress = "0x0820957B320E901622385Cc6C4fca196b20b939F"; // pUSDT mainnet
+  console.log("Using WU2U:", wrappedU2UAddress);
+  console.log("Using pUSDT:", mockUSDTAddress);
 
   // Deploy MockRouter
   console.log("\n📦 Deploying MockRouter...");
@@ -82,17 +64,13 @@ async function main() {
   await simpleStrategy.setAIController(controllerAddress);
   console.log("AI controller set in strategy");
 
-  // Pre-fund strategy with MockUSDT (pair token) via direct transfer (more reliable)
-  console.log("\n💰 Pre-funding strategy with MockUSDT...");
-  const fundAmount = ethers.parseEther("100000");
-  await mockUSDT.transfer(simpleStrategyAddress, fundAmount);
-  console.log("Strategy funded with MockUSDT via direct transfer");
+  // Note: Fund strategy with pUSDT manually after deployment (transfer pUSDT to strategy address)
+  console.log("\n💰 Note: Manually fund strategy with pUSDT after deployment");
 
   console.log("\n✅ Deployment completed successfully!");
   console.log("\n📋 Contract Addresses:");
-  console.log("MockUSDT:", mockUSDTAddress);
-  console.log("MockToken (U2U):", mockTokenAddress);
-  console.log("WrappedU2U:", wrappedU2UAddress);
+  console.log("WU2U (mainnet):", wrappedU2UAddress);
+  console.log("pUSDT (mainnet):", mockUSDTAddress);
   console.log("MockRouter:", mockRouterAddress);
   console.log("YieldVault:", yieldVaultAddress);
   console.log("SimpleStrategy:", simpleStrategyAddress);

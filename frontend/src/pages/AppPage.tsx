@@ -1,5 +1,5 @@
 import { useAccount } from 'wagmi';
-import { u2uNebulasTestnet } from '@/config/wagmi';
+import { u2uSolarisMainnet } from '@/config/wagmi';
 import { Link } from 'react-router-dom';
 import { ConnectButton } from '@/components/ConnectButton';
 import { NetworkGuard } from '@/components/NetworkGuard';
@@ -32,7 +32,7 @@ const AppPage = () => {
             {isConnected && address && (
               <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-lg bg-muted/50">
                 <Wallet className="h-4 w-4 text-accent" />
-                <span className="text-sm font-medium">{u2uNebulasTestnet.name}</span>
+                <span className="text-sm font-medium">{u2uSolarisMainnet.name}</span>
               </div>
             )}
             <ConnectButton />

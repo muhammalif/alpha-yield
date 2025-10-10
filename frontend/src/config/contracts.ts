@@ -1,6 +1,7 @@
-export const VAULT_ADDRESS = import.meta.env.VITE_VAULT_ADDRESS;
-export const STRATEGY_ADDRESS = import.meta.env.VITE_STRATEGY_ADDRESS;
-export const CONTROLLER_ADDRESS = import.meta.env.VITE_CONTROLLER_ADDRESS;
+// Mainnet addresses
+export const VAULT_ADDRESS = import.meta.env.VITE_VAULT_ADDRESS || "0x65E2A5d4fb0e404cAB58ABFDdd7Fd6F9f284da55";
+export const STRATEGY_ADDRESS = import.meta.env.VITE_STRATEGY_ADDRESS || "0xADf33b4f1850f9aa34EB431AbB4B3848ff606f3a";
+export const CONTROLLER_ADDRESS = import.meta.env.VITE_CONTROLLER_ADDRESS || "0xeb9a7c2F1b319ef801d2e616856F8d743aE71c66";
 
 export const VAULT_ABI = [
   {

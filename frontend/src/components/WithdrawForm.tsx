@@ -7,7 +7,7 @@ import { VAULT_ADDRESS, VAULT_ABI } from '@/config/contracts';
 import { useUserData } from '@/hooks/useUserData';
 import { useVaultData } from '@/hooks/useVaultData';
 import { toWei, formatBalance } from '@/lib/formatters';
-import { u2uNebulasTestnet } from '@/config/wagmi';
+import { u2uSolarisMainnet } from '@/config/wagmi';
 import { toast } from 'sonner';
 import { Loader2, ArrowUp, AlertTriangle } from 'lucide-react';
 
@@ -29,7 +29,7 @@ export function WithdrawForm() {
         <div>
           Withdrawal successful!{' '}
           <a
-            href={`https://testnet.u2uscan.xyz/tx/${hash}`}
+            href={`https://u2uscan.xyz/tx/${hash}`}
             target="_blank"
             rel="noopener noreferrer"
             className="underline"
@@ -65,8 +65,8 @@ export function WithdrawForm() {
         toast.error('Vault address is not configured. Set VITE_VAULT_ADDRESS in .env');
         return;
       }
-      if (chainId && chainId !== u2uNebulasTestnet.id) {
-        toast.error('Wrong network. Please switch to U2U Nebulas Testnet.');
+      if (chainId && chainId !== u2uSolarisMainnet.id) {
+        toast.error('Wrong network. Please switch to U2U Solaris Mainnet.');
         return;
       }
 

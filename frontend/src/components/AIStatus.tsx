@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useControllerData } from '@/hooks/useControllerData';
 import { STRATEGY_ADDRESS, STRATEGY_ABI } from '@/config/contracts';
 import { formatPercentage } from '@/lib/formatters';
-import { u2uNebulasTestnet } from '@/config/wagmi';
+import { u2uSolarisMainnet } from '@/config/wagmi';
 import { toast } from 'sonner';
 import { Brain, Activity, Loader2 } from 'lucide-react';
 
@@ -28,7 +28,7 @@ export function AIStatus() {
         address: STRATEGY_ADDRESS as `0x${string}`,
         abi: STRATEGY_ABI,
         functionName: 'harvest',
-        chain: u2uNebulasTestnet,
+        chain: u2uSolarisMainnet,
         account: address as `0x${string}`,
         gas: 500000n, // Set gas limit
       });
