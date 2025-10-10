@@ -172,15 +172,9 @@ contract YieldVault is Ownable, ReentrancyGuard {
             }
         }
 
-        balances[user] = userBalance - amount;
-        totalAssets -= amount;
-
-        // Update reward debt for new balance
-        rewardDebt[user] = (balances[user] * currentRewardPerShare) / 1e18;
-
         // Withdraw from strategy first
         if (strategyRouter != address(0)) {
-            uint256 slippage = 50; // Default 0.5%
+            uint256 slippage = 500; // Default 5% to handle slippage
             try IStrategy(strategyRouter).getAISlippage() returns (uint256 aiSlippage) {
                 if (aiSlippage > 0 && aiSlippage <= MAX_SLIPPAGE_BPS) {
                     slippage = aiSlippage;
@@ -189,11 +183,21 @@ contract YieldVault is Ownable, ReentrancyGuard {
             IStrategy(strategyRouter).withdrawFromStrategy(amount, slippage, block.timestamp + 3600);
         }
 
-        // Unwrap WU2U to U2U and transfer native token to user
-        IWU2U(address(token)).withdraw(amount);
-        payable(user).transfer(amount);
+        // Get actual received amount after strategy withdrawal
+        uint256 received = token.balanceOf(address(this));
+        require(received > 0, "YieldVault: no tokens received from strategy");
 
-        emit Withdrawn(user, amount);
+        balances[user] = userBalance - received;
+        totalAssets -= received;
+
+        // Update reward debt for new balance
+        rewardDebt[user] = (balances[user] * currentRewardPerShare) / 1e18;
+
+        // Unwrap WU2U to U2U and transfer native token to user
+        IWU2U(address(token)).withdraw(received);
+        payable(user).transfer(received);
+
+        emit Withdrawn(user, received);
     }
 
     // Function to get the total assets managed by the router
