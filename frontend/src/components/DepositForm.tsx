@@ -125,7 +125,7 @@ export function DepositForm() {
            abi: VAULT_ABI,
            functionName: 'depositNative',
            value: amountWei,
-           gas: 2000000n, // Set gas limit
+           // gas: 2000000n, // Let wagmi estimate
          } as any);
       } else {
          await depositWrite({
@@ -133,7 +133,7 @@ export function DepositForm() {
            abi: VAULT_ABI,
            functionName: 'deposit',
            args: [amountWei],
-           gas: 2000000n, // Set gas limit
+           // gas: 2000000n, // Let wagmi estimate
          } as any);
       }
       toast.info('Deposit transaction submitted');
