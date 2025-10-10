@@ -16,7 +16,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const AppPage = () => {
   const { address, isConnected } = useAccount();
-  const { totalAssets, strategyBalance, totalRewards, token } = useVaultData();
+  const { totalAssets, strategyBalance, token } = useVaultData();
   const { vaultBalance, tokenBalance, tokenSymbol } = useUserData(token);
 
   return (
@@ -65,26 +65,20 @@ const AppPage = () => {
                   <Vault className="h-6 w-6 text-primary" />
                   Vault Overview
                 </h2>
-                <div className="grid md:grid-cols-3 gap-4">
-                  <StatsCard
-                    title="Total Assets"
-                    value={`${formatBalance(totalAssets)} ${tokenSymbol}`}
-                    icon={Coins}
-                    description="Total value locked in vault"
-                  />
-                  <StatsCard
-                    title="Strategy Balance"
-                    value={`${formatBalance(strategyBalance)} ${tokenSymbol}`}
-                    icon={TrendingUp}
-                    description="Assets deployed in strategies"
-                  />
-                  <StatsCard
-                    title="Total Rewards"
-                    value={`${formatBalance(totalRewards)} ${tokenSymbol}`}
-                    icon={Vault}
-                    description="Total rewards generated"
-                  />
-                </div>
+                 <div className="grid md:grid-cols-2 gap-4">
+                   <StatsCard
+                     title="Total Assets"
+                     value={`${formatBalance(totalAssets)} ${tokenSymbol}`}
+                     icon={Coins}
+                     description="Total value locked in vault"
+                   />
+                   <StatsCard
+                     title="Strategy Balance"
+                     value={`${formatBalance(strategyBalance)} ${tokenSymbol}`}
+                     icon={TrendingUp}
+                     description="Assets deployed in strategies"
+                   />
+                 </div>
               </div>
 
               {/* User Position */}
